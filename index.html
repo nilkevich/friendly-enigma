@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Avito</title>
+		<script
+			src="https://api-maps.yandex.ru/2.1/?apikey=ваш API-ключ&lang=ru_RU"
+			type="text/javascript"
+		></script>
+		<script type="text/javascript">
+			ymaps.ready(init);
+			function init() {
+				var myMap = new ymaps.Map('map', {
+					center: [55.76, 37.64],
+					zoom: 10,
+					mode: 'vector',
+				});
+
+				myMap.events.add('boundschange', function (event) {
+					const coords = event.get('newBounds');
+
+					var xhr = new XMLHttpRequest();
+					var url = '/web/1/developments-advice/cookieLandingMap';
+
+					xhr.open('POST', url, true);
+					xhr.setRequestHeader('Content-Type', 'application/json');
+
+					// Обработчик ответа на запрос
+					xhr.onreadystatechange = function () {
+						if (xhr.readyState === XMLHttpRequest.DONE) {
+							if (xhr.status === 200) {
+								// Обработка успешного ответа
+								var responseData = JSON.parse(xhr.response);
+								// Используйте данные из ответа здесь
+
+								responseData.response.developments.map((item) => {
+									var lat = item.lat;
+									var lon = item.lon;
+
+									var placemark = new ymaps.Placemark(
+										[lat, lon],
+										{},
+										{
+											iconLayout: 'default#image',
+											iconImageHref: 'src/assets/icons/111.svg',
+											iconImageSize: [50, 50],
+										},
+									);
+									myMap.geoObjects.add(placemark);
+								});
+							} else {
+								// Обработка ошибки
+								console.error('Произошла ошибка:', xhr.status);
+							}
+						}
+					};
+					// Подготовка данных для отправки (в данном случае, координат)
+					var data = JSON.stringify({
+						latBottom: coords[0][0],
+						latTop: coords[1][0],
+						lonLeft: coords[0][1],
+						lonRight: coords[1][1],
+					});
+
+					// Отправка данных
+					xhr.send(data);
+				});
+			}
+		</script>
+		<script src="https://flackr.github.io/scroll-timeline/dist/scroll-timeline.js"></script>
+		<script type="module" crossorigin src="/assets/index-Dw5TKSYT.js"></script>
+		<link rel="stylesheet" crossorigin href="/assets/index-DWfaCggr.css">
+	</head>
+	<body>
+		<div id="root"></div>
+	</body>
+</html>
